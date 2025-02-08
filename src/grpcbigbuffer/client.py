@@ -417,13 +417,11 @@ def parse_from_buffer(
         _break: bool = True
         while _break:
             try:
-                debug("Fetching next buffer_obj")
                 try:
                     buffer_obj = next(request_iterator_obj)
                 except Exception as e:
                     debug(f"Exception fetching next buffer object: {e}")
                     raise e
-                debug(f"Buffer_obj fetched with len: {len(buffer_obj.chunk)}")
             except StopIteration:
                 debug("StopIteration in parser_iterator")
                 raise Exception('AbortedIteration')
@@ -434,13 +432,10 @@ def parse_from_buffer(
 
             if not blocks and buffer_obj.HasField('block') or \
                     blocks and buffer_obj.HasField('block') and len(blocks) < Enviroment.block_depth:
-                debug("Block handling detected")
                 block_hash: str = get_hash_from_block(buffer_obj.block)
-                debug(f"Block hash calculated: {block_hash}")
 
                 if block_hash:
                     if blocks and block_hash in blocks:
-                        debug(f"Block {block_hash} already exists in blocks")
                         if blocks.pop() == block_hash:
                             debug(f"Block {block_hash} removed from blocks")
                             break
@@ -448,19 +443,15 @@ def parse_from_buffer(
                             debug("Error: Block intersections are not allowed")
                             raise Exception('gRPCbb: IntersectionError: Intersections between blocks are not allowed.')
                     else:
-                        debug(f"Adding block {block_hash} to blocks")
                         if not blocks:
                             blocks = [block_hash]
                         else:
                             blocks.append(block_hash)
 
                         if block_exists(block_hash):
-                            debug(f"Block {block_hash} exists, signaling stop")
                             signal_block_buffer_stream(block_hash)  # Send the sub-buffer stop signal
 
-                        debug(f"Yielding buffer_obj for block {block_hash}")
                         yield buffer_obj
-                        debug("Recursively iterating into sub-block")
                         for block_chunk in parser_iterator(
                                 request_iterator_obj=request_iterator_obj,
                                 signal_obj=signal_obj,
@@ -741,15 +732,12 @@ def serialize_to_buffer(
                 signal=_signal,
                 debug=debug
         ):
-            debug(f" - Wait signal on read from registry")
             _signal.wait()
-            debug(" - signal pased.")
             try:
                 yield _b
             except Exception as e:
                 debug(f"- exception {e}.")
             finally:
-                debug(f" - finally.")
                 _signal.wait()
         debug(f"Ends read from registry for {filedir}")
         yield buffer_pb2.Buffer(
