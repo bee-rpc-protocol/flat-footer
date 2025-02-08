@@ -184,12 +184,15 @@ def save_chunks_to_block(
         debug: Callable[[str], None] = lambda s: None,
 ):
     try:
+        debug("Save chunks to block ...")
         block_id: str = get_hash_from_block(block_buffer.block)
+        debug(f"Save chunks to block {block_id} start")
         if _json:
             _json.append(
                 (block_id, list(block_buffer.block.previous_lengths_position))
             )
-        if not block_exists(block_id):  # Second com probation of that.
+        if not block_exists(block_id):  # Second comprobation of that.
+            debug(f"The block {block_id} does not exists, saving it.")
             save_chunks_to_file(
                 prev=block_buffer.chunk if block_buffer.HasField('chunk') else None,
                 buffer_iterator=stop_generator(buffer_iterator, block_id),
@@ -197,9 +200,11 @@ def save_chunks_to_block(
                 signal=signal
             )
         else:
+            debug(f"The block {block_id} does exists, skipping all the block buffer.")
             for buffer in buffer_iterator:
                 if buffer.HasField('block') and \
                         get_hash_from_block(buffer.block) == block_id:
+                    debug(f"Block {block_id} buffer moved.")
                     break
     except Exception as e:
         debug(f"Exception saving chunks to block {_json}: {e}")
@@ -217,6 +222,7 @@ def save_chunks_to_file(
     prev: typing.Optional[bytes] = None,
     debug: Callable[[str], None] = lambda s: None,
 ) -> bool:
+    debug(f"Save chunks to file {filename} ...")
     if not signal: signal = Signal(exist=False)
     signal.wait()
     debug(f"Save chunks to the file {filename} start")
