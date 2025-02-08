@@ -10,7 +10,7 @@ from grpcbigbuffer import buffer_pb2
 from grpcbigbuffer.utils import Signal, CHUNK_SIZE, METADATA_FILE_NAME, Enviroment
 
 
-def block_exists(block_id: str, is_dir: bool = False) -> bool|Tuple[bool, bool]:
+def block_exists(block_id: str, is_dir: bool = False, debug: Callable[[str], None] = lambda s: None) -> bool|Tuple[bool, bool]:
     """
     This is a very bad pattern.    
     If is_dir is False, returns if if the file or directory block_id exists. 
@@ -18,6 +18,7 @@ def block_exists(block_id: str, is_dir: bool = False) -> bool|Tuple[bool, bool]:
     
     TODO Should be two separate functions.
     """
+    debug(f"Check if block exists {Enviroment.block_dir + block_id}")
     try:
         f: bool = os.path.isfile(Enviroment.block_dir + block_id)
         d: bool = os.path.isdir(Enviroment.block_dir + block_id)
@@ -83,7 +84,7 @@ def read_multiblock_directory(directory: str, delete_directory: bool = False, ig
 
 
 def read_block(block_id: str, debug: Callable[[str], None] = lambda s: None) -> Generator[Union[bytes, buffer_pb2.Buffer.Block], None, None]:
-    b, d = block_exists(block_id=block_id, is_dir=True)
+    b, d = block_exists(block_id=block_id, is_dir=True, debug=debug)
     debug(f"Reading block {block_id}. block exists -> {b, d}")
     if b and not d:
         yield from read_file_by_chunks(filename=Enviroment.block_dir + block_id)
