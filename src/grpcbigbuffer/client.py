@@ -670,7 +670,7 @@ def parse_from_buffer(
         else:
             debug(f"Error: Invalid indices: {indices}")
             raise Exception('Parse from buffer error: index are not correct ' + str(indices))
-
+    debug("Finalizing main iteration over request_iterator")
 
 def serialize_to_buffer(
         message_iterator=None,  # Message, bytes or Dir
