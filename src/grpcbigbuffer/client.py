@@ -738,7 +738,8 @@ def serialize_to_buffer(
         )
         for _b in read_from_registry(
                 filename=filedir,
-                signal=_signal
+                signal=_signal,
+                debug=debug
         ):
             debug(f" - Wait signal on read from registry")
             _signal.wait()

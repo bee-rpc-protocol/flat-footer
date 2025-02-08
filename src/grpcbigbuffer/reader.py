@@ -3,7 +3,7 @@ import json
 import os
 import shutil
 from io import BufferedReader
-from typing import Generator, Union
+from typing import Callable, Generator, Union
 
 from google.protobuf.message import DecodeError
 from grpcbigbuffer import buffer_pb2
@@ -22,7 +22,8 @@ def block_exists(block_id: str, is_dir: bool = False) -> bool:
     return f or d if not is_dir else (f or d, d)
 
 
-def read_file_by_chunks(filename: str, signal: Signal = None) -> Generator[bytes, None, None]:
+def read_file_by_chunks(filename: str, signal: Signal = None, debug: Callable[[str], None] = lambda s: None) -> Generator[bytes, None, None]:
+    debug(f"Read file by chunks {filename}")
     if not signal: signal = Signal(exist=False)
     signal.wait()
     try:
@@ -33,12 +34,16 @@ def read_file_by_chunks(filename: str, signal: Signal = None) -> Generator[bytes
                 piece: bytes = f.read(CHUNK_SIZE)
                 if len(piece) == 0: return
                 yield piece
+    except Exception as e:
+        debug(f"Exception on read file by chunks: {e}")
     finally:
+        debug(f"Finalized read file by chunks {filename}")
         gc.collect()
 
 
-def read_multiblock_directory(directory: str, delete_directory: bool = False, ignore_blocks: bool = True) \
+def read_multiblock_directory(directory: str, delete_directory: bool = False, ignore_blocks: bool = True, debug: Callable[[str], None] = lambda s: None) \
         -> Generator[Union[bytes, buffer_pb2.Buffer.Block], None, None]:
+    debug(f"Read multiblock directory {directory}. Delete dir: {delete_directory}.  Ignore blocks: {ignore_blocks}")
     if directory[-1] != '/':
         directory = directory + '/'
     for e in json.load(open(
@@ -49,24 +54,30 @@ def read_multiblock_directory(directory: str, delete_directory: bool = False, ig
         else:
             block_id: str = e[0]
             if type(block_id) != str:
+                debug(f"'gRPCbb error on block metadata file ( _.json ).' for block {block_id} on read_multiblock_directory")
                 raise Exception('gRPCbb error on block metadata file ( _.json ).')
             if not ignore_blocks:
                 block = buffer_pb2.Buffer.Block(
                     hashes=[buffer_pb2.Buffer.Block.Hash(type=Enviroment.hash_type, value=bytes.fromhex(block_id))],
                     previous_lengths_position=e[1]
                 )
+                debug("- yielding block init")
                 yield block
-                yield from read_block(block_id=block_id)
+                debug(f"yielded block init")
+                yield from read_block(block_id=block_id, debug=debug)
+                debug("- yielding block end")
                 yield block
+                debug(f"yielded block end")
             else:
-                yield from read_block(block_id=block_id)
+                yield from read_block(block_id=block_id, debug=debug)
 
     if delete_directory:
         shutil.rmtree(directory)
 
 
-def read_block(block_id: str) -> Generator[Union[bytes, buffer_pb2.Buffer.Block], None, None]:
+def read_block(block_id: str, debug: Callable[[str], None] = lambda s: None) -> Generator[Union[bytes, buffer_pb2.Buffer.Block], None, None]:
     b, d = block_exists(block_id=block_id, is_dir=True)
+    debug(f"Reading block {block_id}. block exists -> {b, d}")
     if b and not d:
         yield from read_file_by_chunks(filename=Enviroment.block_dir + block_id)
 
@@ -77,17 +88,22 @@ def read_block(block_id: str) -> Generator[Union[bytes, buffer_pb2.Buffer.Block]
         )
 
     else:
+        debug(f'gRPCbb: Error reading block {block_id}')
         raise Exception('gRPCbb: Error reading block.')
 
 
-def read_from_registry(filename: str, signal: Signal = None) -> Generator[buffer_pb2.Buffer, None, None]:
+def read_from_registry(filename: str, signal: Signal = None, debug: Callable[[str], None] = lambda s: None) -> Generator[buffer_pb2.Buffer, None, None]:
+    is_dir = os.path.isdir(filename)
+    debug(f"Read from registry {filename}. Is dir: {is_dir}")
     for c in read_multiblock_directory(
             directory=filename,
-            ignore_blocks=False
-    ) if os.path.isdir(filename) else \
+            ignore_blocks=False,
+            debug=debug
+    ) if is_dir else \
             read_file_by_chunks(
                 filename=filename,
-                signal=signal
+                signal=signal,
+                debug=debug
             ):
         yield buffer_pb2.Buffer(chunk=c) if type(c) is bytes else buffer_pb2.Buffer(block=c)
 
