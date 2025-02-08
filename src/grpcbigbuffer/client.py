@@ -741,7 +741,10 @@ def serialize_to_buffer(
             debug(" - signal pased.")
             try:
                 yield _b
+            except Exception as e:
+                debug(f"- exception {e}.")
             finally:
+                debug(f" - finally.")
                 _signal.wait()
         debug(f"Ends read from registry for {filedir}")
         yield buffer_pb2.Buffer(
