@@ -417,7 +417,7 @@ def parse_from_buffer(
             try:
                 debug("Fetching next buffer_obj")
                 buffer_obj = next(request_iterator_obj)
-                debug(f"Buffer_obj fetched with len: {len(buffer_obj)}")
+                debug(f"Buffer_obj fetched with len: {len(buffer_obj.chunk)}")
             except StopIteration:
                 debug("StopIteration in parser_iterator")
                 raise Exception('AbortedIteration')
