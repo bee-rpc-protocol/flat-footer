@@ -3,14 +3,21 @@ import json
 import os
 import shutil
 from io import BufferedReader
-from typing import Callable, Generator, Union
+from typing import Callable, Generator, Union, Tuple
 
 from google.protobuf.message import DecodeError
 from grpcbigbuffer import buffer_pb2
 from grpcbigbuffer.utils import Signal, CHUNK_SIZE, METADATA_FILE_NAME, Enviroment
 
 
-def block_exists(block_id: str, is_dir: bool = False) -> bool:
+def block_exists(block_id: str, is_dir: bool = False) -> bool|Tuple[bool, bool]:
+    """
+    This is a very bad pattern.    
+    If is_dir is False, returns if if the file or directory block_id exists. 
+    If is_dir is True, return if exists and if is a directory or not.
+    
+    TODO Should be two separate functions.
+    """
     try:
         f: bool = os.path.isfile(Enviroment.block_dir + block_id)
         d: bool = os.path.isdir(Enviroment.block_dir + block_id)
