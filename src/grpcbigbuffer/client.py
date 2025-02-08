@@ -111,14 +111,10 @@ def get_hash_from_block(block: buffer_pb2.Buffer.Block,
 
 def generate_random_dir() -> str:
     cache_dir = Enviroment.cache_dir
-    try:
-        os.mkdir(cache_dir)
-    except FileExistsError:
-        pass
     while True:
         try:
             new_dir: str = cache_dir + str(randint(1, MAX_DIR))
-            os.mkdir(new_dir)
+            os.makedirs(new_dir)
             return new_dir
         except FileExistsError:
             pass
