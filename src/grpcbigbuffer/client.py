@@ -736,11 +736,14 @@ def serialize_to_buffer(
                 filename=filedir,
                 signal=_signal
         ):
+            debug(f" - Wait signal on read from registry")
             _signal.wait()
+            debug(" - signal pased.")
             try:
                 yield _b
             finally:
                 _signal.wait()
+        debug(f"Ends read from registry for {filedir}")
         yield buffer_pb2.Buffer(
             separator=True
         )
