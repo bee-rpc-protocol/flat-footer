@@ -414,17 +414,19 @@ def parse_from_buffer(
         if not signal_obj:
             debug("signal_obj not provided, creating new Signal")
             signal_obj = Signal(exist=False)
-        _break: bool = True
-        while _break:
+        while True:
             try:
                 try:
                     buffer_obj = next(request_iterator_obj)
+                except StopIteration:
+                    raise StopIteration
                 except Exception as e:
                     debug(f"Exception fetching next buffer object: {e}")
                     raise e
             except StopIteration:
                 debug("StopIteration in parser_iterator")
-                raise Exception('AbortedIteration')
+                # raise Exception('AbortedIteration')
+                break
 
             if buffer_obj.HasField('signal') and buffer_obj.signal:
                 debug("Field 'signal' detected, changing signal_obj state")
