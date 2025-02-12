@@ -84,9 +84,9 @@ class Enviroment(type):
     cache_dir = os.path.abspath(os.curdir) + '/__cache__/grpcbigbuffer/'
     block_dir = os.path.abspath(os.curdir) + '/__block__/'
     block_depth = 1
+    skip_wbp_generation = False
     mem_manager = lambda len: MemManager(len=len)
-    # SHA3_256
-    hash_type: bytes = bytes.fromhex("a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a")
+    hash_type: bytes = bytes.fromhex("a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a")  # SHA3_256
 
     def __call__(cls):
         if cls not in cls._instances:
@@ -95,11 +95,12 @@ class Enviroment(type):
 
 
 def modify_env(
-        cache_dir: typing.Optional[str] = None,
-        mem_manager: typing.Optional[MemManager] = None,
-        hash_type: typing.Optional[bytes] = None,
-        block_depth: typing.Optional[int] = None,
-        block_dir: typing.Optional[str] = None
+        cache_dir:           typing.Optional[str]        = None,
+        mem_manager:         typing.Optional[MemManager] = None,
+        hash_type:           typing.Optional[bytes]      = None,
+        block_depth:         typing.Optional[int]        = None,
+        block_dir:           typing.Optional[str]        = None,
+        skip_wbp_generation: bool                        = False
 ):
     if cache_dir: Enviroment.cache_dir = cache_dir + 'grpcbigbuffer/'
     if mem_manager: Enviroment.mem_manager = mem_manager
@@ -109,6 +110,7 @@ def modify_env(
         rmtree(Enviroment.block_dir)
     if block_depth: Enviroment.block_depth = block_depth
     if block_dir: Enviroment.block_dir = block_dir
+    Enviroment.skip_wbp_generation = skip_wbp_generation
 
 
 def create_lengths_tree(

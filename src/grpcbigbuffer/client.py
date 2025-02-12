@@ -326,6 +326,7 @@ def put_submessage(partition, message, obj):
             )
 
 
+# TODO DELETE DEPRECATED
 def combine_partitions(
         obj_cls: Message,
         partitions_model: tuple,
@@ -571,8 +572,9 @@ def parse_from_buffer(
             with open(dirname + '/' + METADATA_FILE_NAME, 'w') as f:
                 json.dump(_json, f)
 
-            debug("Generating WBP file")
-            generate_wbp_file(dirname, debug=debug)
+            if not Enviroment.skip_wbp_generation:
+                debug("Generating WBP file")
+                generate_wbp_file(dirname, debug=debug)
 
             return dirname  # separator break.
 
