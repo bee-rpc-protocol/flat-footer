@@ -572,7 +572,7 @@ def parse_from_buffer(
                 json.dump(_json, f)
 
             debug("Generating WBP file")
-            generate_wbp_file(dirname)
+            generate_wbp_file(dirname, debug=debug)
 
             return dirname  # separator break.
 

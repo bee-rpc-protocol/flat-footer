@@ -120,7 +120,7 @@ def generate_wbp_file(dirname: str, debug: Callable[[str], None] = lambda s: Non
             int,
             List[str, List[int]]
         ]] = json.load(f)
-
+           
     wbp_length = sum(os.path.getsize(os.path.join(dirname, str(e))) for e in _json if isinstance(e, int))     
     debug(f"Generate wbp file with length {(wbp_length / (1024 * 1024)):.2f} MB")
     
@@ -164,13 +164,20 @@ def generate_wbp_file(dirname: str, debug: Callable[[str], None] = lambda s: Non
             if block_name not in blocks: blocks[block_name] = [block_lengths]
             else:                        blocks[block_name].append(block_lengths)
 
+    debug("Buffer loaded correctly")
+    debug("Validate lenghts tree")
+    
     if not validate_lengths_tree(blocks=blocks, file_list=file_list):
-        exit()
+        debug("Failed on validate lengths")
+        exit() # TODO ??
 
+    debug("Create lengths tree")
     tree: Dict[int, Union[Dict, str]] = create_lengths_tree(blocks)
 
+    debug("Compute lengths tree")
     recalculated_lengths: Dict[int, int] = compute_wbp_lengths(tree=tree, file_list=file_list)
 
+    debug("Write wbp file")
     with open(dirname + '/' + WITHOUT_BLOCK_POINTERS_FILE_NAME, 'wb') as f:
         for c in regenerate_buffer(recalculated_lengths, buffer):
             f.write(c)
