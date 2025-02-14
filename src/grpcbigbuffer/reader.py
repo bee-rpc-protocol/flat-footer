@@ -48,7 +48,7 @@ def read_file_by_chunks(filename: str, signal: Signal = None, debug: Callable[[s
         debug(f"Finalized read file by chunks {filename}")
         gc.collect()
 
-
+# TODO should be re-implemented like utils.getsize
 def read_multiblock_directory(directory: str, delete_directory: bool = False, ignore_blocks: bool = True, debug: Callable[[str], None] = lambda s: None) \
         -> Generator[Union[bytes, buffer_pb2.Buffer.Block], None, None]:
     debug(f"Read multiblock directory {directory}. Delete dir: {delete_directory}.  Ignore blocks: {ignore_blocks}")

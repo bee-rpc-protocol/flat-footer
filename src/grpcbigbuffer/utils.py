@@ -1,4 +1,5 @@
 import hashlib
+import json
 import os
 from shutil import rmtree
 from threading import Condition
@@ -173,4 +174,30 @@ def get_varint_at_position(position, file_list) -> int:
 
 
 def get_pruned_block_length(block_name: str) -> int:
-    return os.path.getsize(Enviroment.block_dir + block_name) - BLOCK_LENGTH
+    return os.path.getsize(os.path.join(Enviroment.block_dir, block_name)) - BLOCK_LENGTH
+
+def getsize(path: str) -> int:
+    if not os.path.exists(path): 
+        return 0
+    
+    if os.path.isdir(path): 
+        with open(os.path.join(path, METADATA_FILE_NAME), 'rb') as f:
+            _json = json.load(f)
+        
+        total_size = 0
+        for e in _json:
+            if type(e) == int:
+                total_size += os.path.getsize(os.path.join(path, str(e)))
+            
+            else:
+                block_id: str = e[0]
+                if type(block_id) != str:
+                    _msg = f"'bee-rpc error on block metadata file ( _.json ).' for block {block_id} on utils.getsize"
+                    raise Exception(_msg)
+                
+                total_size += get_pruned_block_length(block_name=block_id)
+                
+        return total_size
+    
+    else:
+        return os.path.getsize(path)
