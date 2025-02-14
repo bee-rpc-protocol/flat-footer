@@ -1,0 +1,24 @@
+# Cargo artefacts
+/target/
+/Cargo.lock
+
+# Archivos generados por maturin
+/maturin-debug*
+
+# Archivos de configuración local y logs
+**/*.log
+
+# Directorios creados por Python
+__pycache__/
+/*.py[cod]
+*.egg-info/
+
+# Archivos temporales de editores y del sistema
+*.swp
+*.swo
+.DS_Store
+.idea/
+.vscode/
+
+# Archivos generados por el build (en caso de usar rust-analyzer u otro IDE)
+.rustc_info.json
