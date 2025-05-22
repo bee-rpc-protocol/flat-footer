@@ -91,6 +91,8 @@ class Enviroment(type):
 
     def __call__(cls):
         if cls not in cls._instances:
+            os.makedirs(cls.cache_dir, exist_ok=True)
+            os.makedirs(cls.block_dir, exist_ok=True)
             cls._instances[cls] = super(Enviroment, cls).__call__()
         return cls._instances[cls]
 
