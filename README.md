@@ -159,3 +159,11 @@ pub fn get_field(mmap: &Mmap, offset: u64, length: u64) -> &[u8] {
 
 By adopting **Flat-Footer**, you are building a **technically pure, dependency-free standard**. You are trading the convenience of "evolving schemas" (which you don't need for a strict VM specification) for the power of **absolute structural integrity** and **instant access** to gigabytes of data.
 
+
+
+=====
+
+
+
+Transmission over QUIC uses the footer as a header.  Negotiates blocks before transmission to consider what parts of the buffer are not needed to be transmited. In case there are no blocks, can transmit using compression ZStandard.
+
